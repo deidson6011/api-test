@@ -1,37 +1,25 @@
-import uvicorn
-from typing import Union, Annotated
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import FastAPI, Request
+import socket
 
 
 app = FastAPI()
 
 
-valid_keys = ['abcdef', 'ghijkl', 'mnopqr']
-
-
-# Route for docker healthcheck
-@app.get("/healthcheck", include_in_schema=False)
-async def healthcheck(request: Request):
-    #logger.debug("Healthcheck called.")
-    return {"status": "healthy"}
-
-
 @app.get("/")
-def read_root():
+async def read_root():
     return {"Hello": "World"}
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q":q}
+@app.get("/who")
+def who_am_i():
+    host_name = socket.gethostname()
+    return {"This is": host_name}
 
 
-@app.get("/auth/", status_code=200)
-async def read_items(auth: Annotated[Union[str, None], Header()] = None):
-    if auth not in valid_keys:
-        raise HTTPException(status_code=401, detail="Invalid Key")
-    return {"Result": ':)'}
+@app.get("/healthcheck", include_in_schema=False)
+async def healthcheck(request: Request):
+    return {"status": "healthy"}
 
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", port=5000, log_level="info")
+if __name__ == '__main__':
+    uvicorn.run("main:app", port=5001, log_level="info")
